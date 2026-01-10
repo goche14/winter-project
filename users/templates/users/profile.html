@@ -1,72 +1,135 @@
 {% extends "blog/base.html" %}
+{% load static %}
+
 {% block content %}
 
 <div class="row">
-    <!-- Left: Profile info -->
     <div class="col-md-8">
-        <div class="content-section position-relative" style="padding: 20px;">
-            <div class="media position-relative">
-                <!-- Profile picture -->
-                <div style="position: relative; display: inline-block;">
-                    {% if user.profile.image %}
-                        <img class="rounded-circle account-img" src="{{ user.profile.image.url }}" width="125" height="125" alt="Profile Picture">
-                    {% else %}
-                        <img class="rounded-circle account-img" src="/media/default.jpg" width="125" height="125" alt="Profile Picture">
-                    {% endif %}
 
-                    <!-- Edit button -->
-                    <button id="change-image-btn" style="
-                        position: absolute;
-                        bottom: 0;
-                        right: 0;
-                        border: none;
-                        background-color: #007bff;
-                        color: white;
-                        border-radius: 50%;
-                        width: 35px;
-                        height: 35px;
-                        cursor: pointer;
-                    " title="Change profile picture">
+        <!-- PROFILE INFO -->
+        <div class="content-section position-relative p-3 border rounded shadow-sm">
+            <div class="media align-items-center">
+
+                <!-- PROFILE IMAGE -->
+                <div style="position: relative; display: inline-block;">
+                    <img
+                        class="rounded-circle account-img"
+                        src="{% if user.profile.image %}{{ user.profile.image.url }}{% else %}{% static 'default.jpg' %}{% endif %}"
+                        width="125"
+                        height="125"
+                        alt="Profile Picture"
+                    >
+
+                    <!-- IMAGE EDIT BUTTON -->
+                    <button
+                        id="change-image-btn"
+                        style="
+                            position: absolute;
+                            bottom: 0;
+                            right: 0;
+                            border: none;
+                            background-color: #007bff;
+                            color: white;
+                            border-radius: 50%;
+                            width: 35px;
+                            height: 35px;
+                            cursor: pointer;
+                        "
+                        title="Change profile picture"
+                    >
                         ✎
                     </button>
                 </div>
 
-                <!-- User info -->
+                <!-- USER INFO -->
                 <div class="media-body ml-3">
                     <h2 class="account-heading">{{ user.username }}</h2>
                     <p class="text-secondary">{{ user.email }}</p>
-                    <p class="text-muted">{{ user.profile.bio|default:"This user has no bio yet." }}</p>
                 </div>
             </div>
 
-            <!-- Hidden form to upload profile picture -->
-            <form id="profile-upload-form" method="POST" enctype="multipart/form-data" style="display:none;">
-                {% csrf_token %}
-                <input type="file" name="image" id="profile-image-input" accept="image/*">
-                <button type="submit" id="submit-btn"></button>
-            </form>
-
+            <!-- UPDATE BUTTON -->
+            <button
+                id="update-btn"
+                class="btn btn-outline-primary mt-3"
+            >
+                Update Account
+            </button>
         </div>
-    </div>
 
-    <!-- Right sidebar is handled in base.html -->
-    <div class="col-md-4"></div>
+        <!-- HIDDEN FORM -->
+        <div
+            id="update-form-container"
+            class="content-section p-3 border rounded shadow-sm mt-3"
+            style="display: none;"
+        >
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <fieldset>
+                    <legend class="mb-3">Edit Account</legend>
+                    
+                    <!-- BLANK INPUTS -->
+                    <p>
+                        <label for="{{ u_form.username.id_for_label }}">Username</label><br>
+                        <input type="text" name="username" id="{{ u_form.username.id_for_label }}" placeholder="Enter new username">
+                    </p>
+                    <p>
+                        <label for="{{ u_form.email.id_for_label }}">Email</label><br>
+                        <input type="email" name="email" id="{{ u_form.email.id_for_label }}" placeholder="Enter new email">
+                    </p>
+                </fieldset>
+
+                <button class="btn btn-primary" type="submit">Save Changes</button>
+            </form>
+        </div>
+
+        <!-- HIDDEN IMAGE UPLOAD FORM -->
+        <form
+            id="profile-upload-form"
+            method="POST"
+            enctype="multipart/form-data"
+            style="display: none;"
+        >
+            {% csrf_token %}
+            <input
+                type="file"
+                name="image"
+                id="profile-image-input"
+                accept="image/*"
+            >
+        </form>
+
+    </div>
 </div>
 
 <script>
+    // PROFILE PICTURE CHANGE
     const changeBtn = document.getElementById('change-image-btn');
     const fileInput = document.getElementById('profile-image-input');
-    const submitBtn = document.getElementById('submit-btn');
+    const imageForm = document.getElementById('profile-upload-form');
 
-    // When the edit button is clicked, open file picker
     changeBtn.addEventListener('click', () => {
         fileInput.click();
     });
 
-    // When a file is selected, automatically submit the form
     fileInput.addEventListener('change', () => {
-        if(fileInput.files.length > 0){
-            submitBtn.click();
+        if (fileInput.files.length > 0) {
+            imageForm.submit();
+        }
+    });
+
+    // SHOW/HIDE UPDATE FORM
+    const updateBtn = document.getElementById('update-btn');
+    const updateFormContainer = document.getElementById('update-form-container');
+
+    updateBtn.addEventListener('click', () => {
+        if (updateFormContainer.style.display === "none") {
+            updateFormContainer.style.display = "block";
+            updateBtn.textContent = "Cancel";
+        } else {
+            updateFormContainer.style.display = "none";
+            updateBtn.textContent = "Update Account";
         }
     });
 </script>
@@ -84,13 +147,21 @@
     margin-bottom: 0;
 }
 
-.text-muted {
-    color: #6c757d;
-}
-
 .media {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+}
+
+.content-section {
+    background-color: #fff;
+}
+
+.btn-outline-primary {
+    transition: all 0.3s;
+}
+.btn-outline-primary:hover {
+    background-color: #007bff;
+    color: #fff;
 }
 </style>
 
